@@ -1,14 +1,15 @@
 package app.dto;
 
 public class LoginRequestDTO {
-	private int IDNumber;
+	private int idNumber;
     private String password;
-	public int getIDNumber() {
-		return IDNumber;
-	}
-	public void setIDNumber(int iDNumber) {
-		IDNumber = iDNumber;
-	}
+    public int getIdNumber() {  // Changed getter
+        return idNumber;
+    }
+    
+    public void setIdNumber(int idNumber) {  // Changed setter
+        this.idNumber = idNumber;
+    }
 	public String getPassword() {
 		return password;
 	}

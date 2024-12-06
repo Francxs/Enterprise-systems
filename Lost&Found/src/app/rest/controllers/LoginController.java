@@ -27,7 +27,7 @@ public class LoginController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(LoginRequestDTO loginRequest) {
         try {
-            User user = userComponent.authenticateUser(loginRequest.getIDNumber(), loginRequest.getPassword());
+            User user = userComponent.authenticateUser(loginRequest.getIdNumber(), loginRequest.getPassword());
             // Use the user variable here, for example, generate a token or return user details
             String token = generateToken(user); // Example method to generate a token
             return Response.ok("Login successful. Token: " + token).build();
