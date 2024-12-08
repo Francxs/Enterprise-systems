@@ -31,6 +31,12 @@ public class FoundReportComponent {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private TwilioSender twilioSender;
+    
+    @Autowired
+    public UserComponent userComponent;
 
     public FoundReportDTO createReport(FoundReportDTO reportDTO) {
         FoundReport report = convertToEntity(reportDTO);
@@ -41,7 +47,7 @@ public class FoundReportComponent {
 //      String recipientNumber = "+63" + report.getUser().getIdNumber(); // Adjust recipient logic if necessary
 //      twilioSender.sendSMS(recipientNumber, message);
       String message = "Thank you for sending a Found Report. We appreciate your honesty<3 : " + report.getFoundDetails();
-      UserDTO user = userComponent.getUser(report.getUser().getIdNumber()).orElseThrow(() -> new RuntimeException("User not found")); // Retrieve the user using the UserComponent
+      UserDTO user = userComponent.getUser(report.getUser().getIDNumber()).orElseThrow(() -> new RuntimeException("User not found")); // Retrieve the user using the UserComponent
       String recipientNumber = "+63" + user.getPhoneNumber().substring(1); // Use the phone number from the User entity
       twilioSender.sendSMS(recipientNumber, message);
         
