@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 import app.dto.FoundReportDTO;
+import app.dto.UserDTO;
 //import app.dto.LocationDTO;
 import app.entities.ClaimEvent;
 import app.entities.FoundReport;
@@ -34,6 +35,16 @@ public class FoundReportComponent {
     public FoundReportDTO createReport(FoundReportDTO reportDTO) {
         FoundReport report = convertToEntity(reportDTO);
         FoundReport createdReport = foundReportRepository.save(report);
+        
+     // Send SMS after creating the report
+//      String message = "Thank you for sending a Found Report. We appreciate your honesty<3 : " + report.getFoundDetails();
+//      String recipientNumber = "+63" + report.getUser().getIdNumber(); // Adjust recipient logic if necessary
+//      twilioSender.sendSMS(recipientNumber, message);
+      String message = "Thank you for sending a Found Report. We appreciate your honesty<3 : " + report.getFoundDetails();
+      UserDTO user = userComponent.getUser(report.getUser().getIdNumber()).orElseThrow(() -> new RuntimeException("User not found")); // Retrieve the user using the UserComponent
+      String recipientNumber = "+63" + user.getPhoneNumber().substring(1); // Use the phone number from the User entity
+      twilioSender.sendSMS(recipientNumber, message);
+        
         return convertToDTO(createdReport);
     }
 
