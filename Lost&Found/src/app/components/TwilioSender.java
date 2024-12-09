@@ -1,39 +1,41 @@
 package app.components;
 
-import com.twilio.Twilio;
-import com.twilio.rest.api.v2010.account.Message;
-import com.twilio.type.PhoneNumber;
-//import org.springframework.beans.factory.annotation.Value;
+import okhttp3.Credentials;
+import okhttp3.ResponseBody;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-//import com.twilio.converter.Promoter;
-
-//import java.net.URI;
-//import java.math.BigDecimal;
+import retrofit2.Call;
+import retrofit2.Response;
 
 @Component
 public class TwilioSender {
-	
-	// Find your Account Sid and Token at twilio.com/console
-	  public static final String ACCOUNT_SID = " ";
-	  public static final String AUTH_TOKEN = " ";
-	  
-	  
-	  static {
-	        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-	    }
 
-	    public void sendSMS(String recipientNumber, String messageBody) {
-	        Message message = Message.creator(
-	            new PhoneNumber(recipientNumber),
-	            new PhoneNumber(" "), // Replace with your Twilio message SID
-	            messageBody
-	        ).create();
-	        System.out.println("Message sent! SID: " + message.getSid());
-	    }
-	  
+    @Autowired
+    private TwilioApiService twilioApiService;
+    
+    @Value("${twilio.account.sid}")
+    private String accountSid;
+
+    @Value("${twilio.auth.token}")
+    private String authToken;
+
+    @Value("${twilio.messaging.service.sid}")
+    private String messagingServiceSid;
+
+    public void sendSMS(String recipientNumber, String messageBody) {
+        String authHeader = Credentials.basic(accountSid, authToken);
+        TwilioMessage twilioMessage = new TwilioMessage(recipientNumber, messagingServiceSid, messageBody);
+        Call<ResponseBody> call = twilioApiService.sendMessage(authHeader, accountSid, twilioMessage.getTo(), twilioMessage.getFrom(), twilioMessage.getBody());
+        try {
+            Response<ResponseBody> response = call.execute();
+            if (response.isSuccessful()) {
+                System.out.println("Message sent! Response: " + response.body().string());
+            } else {
+                System.out.println("Failed to send message. Error: " + response.errorBody().string());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
-	
-
-
-
-
