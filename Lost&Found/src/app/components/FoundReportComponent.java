@@ -36,26 +36,43 @@ public class FoundReportComponent {
     private TwilioSender twilioSender;
     
     @Autowired
+    private MessageScheduler messageScheduler;
+    
+    @Autowired
     public UserComponent userComponent;
 
     public FoundReportDTO createReport(FoundReportDTO reportDTO) {
         FoundReport report = convertToEntity(reportDTO);
         FoundReport createdReport = foundReportRepository.save(report);
         
-     // Send SMS after creating the report
-//        String message = "Thank you for sending a Found Report. We appreciate your honesty<3 : " + report.getFoundDetails();
-//        String recipientNumber = "+63" + report.getUser().getIdNumber(); // Adjust recipient logic if necessary
-//        twilioSender.sendSMS(recipientNumber, message);
+        // Send SMS after creating the report
         String message = "Thank you for sending a Found Report. We appreciate your honesty<3 : " + report.getFoundDetails();
         UserDTO user = userComponent.getUser(report.getUser().getIDNumber()).orElseThrow(() -> new RuntimeException("User not found")); // Retrieve the user using the UserComponent
         String recipientNumber = "+63" + user.getPhoneNumber().substring(1); // Use the phone number from the User entity
         twilioSender.sendSMS(recipientNumber, message);
+        
+     // Trigger the scheduler to send additional messages 
+        messageScheduler.sendInitialMessage(createdReport.getFoundID());
 
         return convertToDTO(createdReport);
     }
 
     public Optional<FoundReportDTO> getReport(int foundID) {
         return foundReportRepository.findByFoundID(foundID).map(this::convertToDTO);
+    }
+    
+    public Optional<UserDTO> getUser(int idNumber) {
+        User user = userRepository.findByIdNumber(idNumber)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return Optional.of(convertToDTO(user));
+    }
+
+    private UserDTO convertToDTO(User user) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setIdNumber(user.getIDNumber());
+        userDTO.setPhoneNumber(user.getPhoneNumber());
+        // Add other fields as necessary
+        return userDTO;
     }
 
     private FoundReportDTO convertToDTO(FoundReport report) {
